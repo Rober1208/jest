@@ -7,6 +7,7 @@
 
 import type {Jest, JestEnvironment} from '@jest/environment';
 import {makeProjectConfig} from '@jest/test-utils';
+import LeakDetector from 'jest-leak-detector';
 import type {RequireBuilder} from '../cjsRequire';
 import type {JestGlobals} from '../JestGlobals';
 import {
@@ -14,6 +15,7 @@ import {
   ModuleExecutor,
   type ModuleExecutorOptions,
 } from '../ModuleExecutor';
+import {createInitialModule} from '../moduleTypes';
 import type {Resolution} from '../Resolution';
 import {TestMainModule} from '../TestMainModule';
 import type {TransformCache} from '../TransformCache';
@@ -125,6 +127,33 @@ describe('ModuleExecutor', () => {
         executor.exec(localModule, undefined, new Map(), null, undefined),
       ).not.toThrow();
       expect(localModule.exports).toEqual({});
+    });
+
+    test('the `parent` getter does not keep the executor alive', async () => {
+      let executor: ModuleExecutor | null = makeExecutor({
+        environment: {
+          getVmContext: () => null,
+          global: {},
+        } as unknown as JestEnvironment,
+        resolution: {
+          getGlobalPaths: () => [],
+          getModulePaths: () => [],
+        } as unknown as Resolution,
+        transformCache: {
+          transform: () => '',
+        } as unknown as TransformCache,
+      });
+      const localModule = createInitialModule('/m.js');
+      executor.exec(localModule, undefined, new Map(), null, undefined);
+
+      const leakDetector = new LeakDetector(executor);
+      // eslint-disable-next-line no-useless-assignment
+      executor = null;
+
+      // `localModule` holds on to its `parent` getter until after the check,
+      // the way V8 may keep an accessor alive past its object.
+      expect(await leakDetector.isLeaking()).toBe(false);
+      expect((localModule as {parent?: unknown}).parent).toBeNull();
     });
   });
 });

@@ -14,6 +14,7 @@
     {"path": "../jest-fake-timers"},
     {"path": "../jest-globals"},
     {"path": "../jest-haste-map"},
+    {"path": "../jest-leak-detector"},
     {"path": "../jest-message-util"},
     {"path": "../jest-mock"},
     {"path": "../jest-regex-util"},

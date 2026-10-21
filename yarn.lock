@@ -15200,6 +15200,7 @@ __metadata:
     graceful-fs: "npm:^4.2.11"
     jest-environment-node: "workspace:*"
     jest-haste-map: "workspace:*"
+    jest-leak-detector: "workspace:*"
     jest-message-util: "workspace:*"
     jest-mock: "workspace:*"
     jest-regex-util: "workspace:*"

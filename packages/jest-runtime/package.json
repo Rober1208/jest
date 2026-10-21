@@ -46,7 +46,8 @@
   "devDependencies": {
     "@jest/test-utils": "workspace:*",
     "@types/graceful-fs": "^4.1.9",
-    "jest-environment-node": "workspace:*"
+    "jest-environment-node": "workspace:*",
+    "jest-leak-detector": "workspace:*"
   },
   "engines": {
     "node": "^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0"

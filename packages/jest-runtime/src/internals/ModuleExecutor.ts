@@ -63,6 +63,25 @@ export interface ModuleExecutorOptions {
   ) => Promise<VMModule>;
 }
 
+// Kept out of `ModuleExecutor#exec` so the getter doesn't close over that
+// method's scope, which holds `this`. V8 can keep an accessor alive after the
+// module object is gone (V8 15 does, via the map shared by objects from
+// `createInitialModule`), and reaching the executor from there would keep the
+// whole test environment alive.
+function defineParentGetter(
+  module: Module,
+  moduleRegistry: ModuleRegistry,
+  from: string | null,
+): void {
+  Object.defineProperty(module, 'parent', {
+    enumerable: true,
+    get() {
+      const key = from || '';
+      return moduleRegistry.get(key) || null;
+    },
+  });
+}
+
 export class ModuleExecutor {
   readonly injectedModuleParameters: ReadonlyArray<string>;
 
@@ -122,13 +141,7 @@ export class ModuleExecutor {
     try {
       module.children = [];
 
-      Object.defineProperty(module, 'parent', {
-        enumerable: true,
-        get() {
-          const key = from || '';
-          return moduleRegistry.get(key) || null;
-        },
-      });
+      defineParentGetter(module, moduleRegistry, from);
       const modulePaths = this.resolution.getModulePaths(module.path);
       const globalPaths = this.resolution.getGlobalPaths(moduleName);
       module.paths = [...modulePaths, ...globalPaths];

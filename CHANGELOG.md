@@ -4,6 +4,8 @@
 
 ### Fixes
 
+- `[jest-runtime]` Stop the `module.parent` getter from keeping a test file's environment alive after teardown, which made `--detectLeaks` flag every test file as leaking on V8 15 (Node 27 nightly) ([#XXXXX](https://github.com/jestjs/jest/pull/XXXXX))
+
 ### Chore & Maintenance
 
 ## 30.5.2
